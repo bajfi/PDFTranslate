@@ -7,6 +7,7 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
+
 import deepl
 import ollama
 import openai
@@ -14,6 +15,12 @@ import requests
 import xinference_client
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from tencentcloud.common import credential
 from tencentcloud.tmt.v20180321.models import (
     TextTranslateRequest,
@@ -23,12 +30,6 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
-
-
-from tenacity import retry, retry_if_exception_type
-from tenacity import stop_after_attempt
-from tenacity import wait_exponential
-
 
 logger = logging.getLogger(__name__)
 
@@ -322,6 +323,55 @@ class OllamaTranslator(BaseTranslator):
         self.client = ollama.Client(host=self.envs["OLLAMA_HOST"])
         self.prompt_template = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
+
+    def prompt(
+        self, text: str, prompt_template: Template | None = None
+    ) -> list[dict[str, str]]:
+        if prompt_template:
+            try:
+                return [
+                    {
+                        "role": "user",
+                        "content": cast(Template, prompt_template).safe_substitute(
+                            {
+                                "lang_in": self.lang_in,
+                                "lang_out": self.lang_out,
+                                "text": text,
+                            }
+                        ),
+                    }
+                ]
+            except Exception:
+                logging.exception(
+                    "Error parsing custom prompt template, using enhanced default prompt."
+                )
+
+        # Enhanced system prompt for Ollama models
+        system_message = {
+            "role": "system",
+            "content": (
+                "You are a precise translation engine specialized in academic and technical documents. "
+                "Translate accurately while preserving all special elements:\n"
+                "- Mathematical formulas and equations must remain exactly as in the original\n"
+                "- Special tags and placeholders like styles, must be kept intact\n"
+                "- Code blocks including the code indent and technical notation must be preserved\n"
+                "- Document formatting and structure must be maintained\n\n"
+                "Guidelines:\n"
+                "1. NEVER modify any mathematical notation or special tags\n"
+                "2. Use appropriate technical terminology for the target language\n"
+                "3. Maintain the original meaning with technical precision\n"
+                "4. Output ONLY the translated text without any additional commentary\n"
+                "5. If a term is ambiguous, use the most common technical translation or just leave it as is."
+            ),
+        }
+
+        # User prompt with content to translate
+        user_message = {
+            "role": "user",
+            "content": f"Translate this text from {self.lang_in} to {self.lang_out}:\n\n{text}",
+        }
+
+        return [system_message, user_message]
 
     def do_translate(self, text: str) -> str:
         if (max_token := len(text) * 5) > self.options["num_predict"]:
@@ -836,8 +886,8 @@ class ArgosTranslator(BaseTranslator):
 
     def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
         try:
-            import argostranslate.package
-            import argostranslate.translate
+            import argostranslate.package  # type: ignore
+            import argostranslate.translate  # type: ignore
         except ImportError:
             logger.warning(
                 "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
@@ -866,12 +916,9 @@ class ArgosTranslator(BaseTranslator):
         argostranslate.package.install_from_path(download_path)
 
     def translate(self, text: str, ignore_cache: bool = False):
-        # Translate
-        import argotranslate.translate  # noqa: F401
+        import argostranslate.translate  # type: ignore
 
-        installed_languages = (
-            argostranslate.translate.get_installed_languages()  # noqa: F821
-        )
+        installed_languages = argostranslate.translate.get_installed_languages()
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
             0
         ]

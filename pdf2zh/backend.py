@@ -1,12 +1,14 @@
-from flask import Flask, request, send_file
+import io
+import json
+
+import tqdm
 from celery import Celery, Task
 from celery.result import AsyncResult
+from flask import Flask, request, send_file
+
 from pdf2zh import translate_stream
-import tqdm
-import json
-import io
-from pdf2zh.doclayout import ModelInstance
 from pdf2zh.config import ConfigManager
+from pdf2zh.doclayout import ModelInstance
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(
@@ -93,4 +95,5 @@ def get_translate_result(id: str, format: str):
 
 
 if __name__ == "__main__":
+    flask_app.run()
     flask_app.run()
