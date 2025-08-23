@@ -20,7 +20,8 @@ from babeldoc.translation_config import TranslationConfig as YadtConfig
 from pdf2zh import __version__, log
 from pdf2zh.config import ConfigManager
 from pdf2zh.doclayout import ModelInstance, OnnxModel
-from pdf2zh.high_level import download_remote_fonts, translate
+from pdf2zh.font_utils import download_remote_fonts
+from pdf2zh.high_level import translate
 
 logger = logging.getLogger(__name__)
 

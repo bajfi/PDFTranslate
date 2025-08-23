@@ -24,11 +24,15 @@ params = {
     'thread': 4,
 }
 ```
+
 Translate with files:
+
 ```python
 (file_mono, file_dual) = translate(files=['example.pdf'], **params)[0]
 ```
+
 Translate with stream:
+
 ```python
 with open('example.pdf', 'rb') as f:
     (stream_mono, stream_dual) = translate_stream(stream=f.read(), **params)
@@ -86,6 +90,7 @@ In a more flexible way, you can communicate with the program using HTTP protocol
      ```
 
    - Interrupt if running and delete the task
+
      ```bash
      curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
      ```
