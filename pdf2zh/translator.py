@@ -1,3 +1,4 @@
+import asyncio
 import html
 import json
 import logging
@@ -103,6 +104,22 @@ class BaseTranslator:
         self.cache.set(text, translation)
         return translation
 
+    async def atranslate(self, text: str, ignore_cache: bool = False) -> str:
+        """
+        Async version of translate method.
+        :param text: text to translate
+        :param ignore_cache: whether to ignore cache
+        :return: translated text
+        """
+        if not (self.ignore_cache or ignore_cache):
+            cache = self.cache.get(text)
+            if cache is not None:
+                return cache
+
+        translation = await self.ado_translate(text)
+        self.cache.set(text, translation)
+        return translation
+
     def do_translate(self, text: str) -> str:
         """
         Actual translate text, override this method
@@ -110,6 +127,16 @@ class BaseTranslator:
         :return: translated text
         """
         raise NotImplementedError
+
+    async def ado_translate(self, text: str) -> str:
+        """
+        Async version of do_translate. Override this method for async support.
+        Default implementation runs the sync version in a thread.
+        :param text: text to translate
+        :return: translated text
+        """
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.do_translate, text)
 
     def prompt(
         self, text: str, prompt_template: Template | None = None
@@ -321,8 +348,17 @@ class OllamaTranslator(BaseTranslator):
             "num_predict": 2000,
         }
         self.client = ollama.Client(host=self.envs["OLLAMA_HOST"], timeout=60.0)
+        self.async_client = None  # Lazy initialization
         self.prompt_template = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
+
+    def _get_async_client(self) -> ollama.AsyncClient:
+        """Lazy initialization of async client"""
+        if self.async_client is None:
+            self.async_client = ollama.AsyncClient(
+                host=self.envs["OLLAMA_HOST"], timeout=60.0
+            )
+        return self.async_client
 
     def prompt(
         self, text: str, prompt_template: Template | None = None
@@ -378,6 +414,21 @@ class OllamaTranslator(BaseTranslator):
             self.options["num_predict"] = max_token
 
         response = self.client.chat(
+            model=self.model,
+            messages=self.prompt(text, self.prompt_template),
+            options=self.options,
+        )
+        content = self._remove_cot_content(response.message.content or "")
+        return content.strip()
+
+    async def ado_translate(self, text: str) -> str:
+        """Async implementation of translation using ollama AsyncClient"""
+        if (max_token := len(text) * 5) > self.options["num_predict"]:
+            self.options["num_predict"] = max_token
+
+        async_client = self._get_async_client()
+
+        response = await async_client.chat(
             model=self.model,
             messages=self.prompt(text, self.prompt_template),
             options=self.options,

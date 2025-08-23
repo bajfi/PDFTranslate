@@ -357,10 +357,83 @@ class TranslateConverter(PDFConverterEx):
                 else:
                     log.exception(e, exc_info=False)
                 raise e
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.thread
-        ) as executor:
-            news = list(executor.map(worker, sstk))
+
+        # Check if translator supports async and use it for better performance
+        if hasattr(self.translator, 'ado_translate') and self.thread > 1:
+            try:
+                import asyncio
+
+                async def async_worker(s: str):  # 异步翻译
+                    if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
+                        return s
+                    try:
+                        new = await self.translator.atranslate(s)
+                        return new
+                    except BaseException as e:
+                        if log.isEnabledFor(logging.DEBUG):
+                            log.exception(e)
+                        else:
+                            log.exception(e, exc_info=False)
+                        raise e
+
+                async def async_translate_all():
+                    # Create semaphore to limit concurrent requests
+                    semaphore = asyncio.Semaphore(self.thread)
+
+                    async def limited_worker(s: str):
+                        async with semaphore:
+                            return await async_worker(s)
+
+                    tasks = [limited_worker(s) for s in sstk]
+                    return await asyncio.gather(*tasks)
+
+                # Try to use async translation if available
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If we're already in an async context, create new loop in thread
+                        import threading
+                        result_queue = []
+                        exception_queue = []
+
+                        def run_async():
+                            try:
+                                new_loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(new_loop)
+                                result = new_loop.run_until_complete(async_translate_all())
+                                result_queue.append(result)
+                            except Exception as e:
+                                exception_queue.append(e)
+                            finally:
+                                new_loop.close()
+
+                        thread = threading.Thread(target=run_async)
+                        thread.start()
+                        thread.join()
+
+                        if exception_queue:
+                            raise exception_queue[0]
+                        news = result_queue[0]
+                    else:
+                        news = loop.run_until_complete(async_translate_all())
+                except RuntimeError:
+                    # No event loop, create one
+                    news = asyncio.run(async_translate_all())
+
+                log.debug("Used async translation with ollama AsyncClient")
+            except Exception as e:
+                log.warning(f"Async translation failed, falling back to sync: {e}")
+                # Fall back to synchronous translation
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=self.thread
+                ) as executor:
+                    news = list(executor.map(worker, sstk))
+        else:
+            # Use traditional ThreadPoolExecutor for synchronous translation
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.thread
+            ) as executor:
+                news = list(executor.map(worker, sstk))
 
         ############################################################
         # C. 新文档排版
