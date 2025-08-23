@@ -13,7 +13,7 @@ classifiers = [
 dependencies = [
     "requests",
     # for arm64 linux whells
-    "pymupdf<1.25.3",
+    "pymupdf",
     "tqdm",
     "tenacity",
     "numpy",
@@ -23,7 +23,7 @@ dependencies = [
     "openai>=1.0.0",
     "azure-ai-translation-text<=1.0.1",
     # 5.36 has a bug, webui starts with a white screen
-    "gradio<5.36",
+    "gradio",
     "huggingface_hub",
     "onnx",
     "onnxruntime",

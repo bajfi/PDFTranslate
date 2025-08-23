@@ -299,7 +299,7 @@ class OllamaTranslator(BaseTranslator):
     name = "ollama"
     envs = {
         "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_MODEL": "gemma2",
+        "OLLAMA_MODEL": "gemma3",
     }
     CustomPrompt = True
 
@@ -320,7 +320,7 @@ class OllamaTranslator(BaseTranslator):
             "temperature": 0,  # 随机采样可能会打断公式标记
             "num_predict": 2000,
         }
-        self.client = ollama.Client(host=self.envs["OLLAMA_HOST"])
+        self.client = ollama.Client(host=self.envs["OLLAMA_HOST"], timeout=60.0)
         self.prompt_template = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
 
