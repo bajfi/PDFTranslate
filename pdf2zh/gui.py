@@ -12,11 +12,9 @@ from string import Template
 import gradio as gr
 import requests
 import tqdm
-from babeldoc import __version__ as babeldoc_version
 from babeldoc.docvision.doclayout import OnnxModel
 from gradio_pdf import PDF
 
-from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
 from pdf2zh.doclayout import ModelInstance
 from pdf2zh.high_level import translate
@@ -512,29 +510,20 @@ demo_recaptcha = """
     </script>
     """
 
-tech_details_string = f"""
-                    <summary>Technical details</summary>
-                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-                    - BabelDOC: <a href="https://github.com/funstory-ai/BabelDOC">funstory-ai/BabelDOC</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
-                    - pdf2zh Version: {__version__} <br>
-                    - BabelDOC Version: {babeldoc_version}
-                """
+
 cancellation_event_map = {}
 
 
 # The following code creates the GUI
 with gr.Blocks(
-    title="PDFMathTranslate - PDF Translation with preserved formats",
+    title="PDFTranslate - PDF Translation with preserved formats",
     theme=gr.themes.Default(
         primary_hue=custom_blue, spacing_size="md", radius_size="lg"
     ),
     css=custom_css,
     head=demo_recaptcha if flag_demo else "",
 ) as demo:
-    gr.Markdown(
-        "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
-    )
+    gr.Markdown("# [PDFTranslate @ GitHub](https://github.com/bajfi/PDFTranslate.git)")
 
     with gr.Row():
         with gr.Column(scale=1):
@@ -675,10 +664,6 @@ with gr.Blocks(
             recaptcha_box = gr.HTML('<div id="recaptcha-box"></div>')
             translate_btn = gr.Button("Translate", variant="primary")
             cancellation_btn = gr.Button("Cancel", variant="secondary")
-            tech_details_tog = gr.Markdown(
-                tech_details_string,
-                elem_classes=["secondary-text"],
-            )
             page_range.select(on_select_page, page_range, page_input)
             service.select(
                 on_select_service,
