@@ -137,6 +137,43 @@ class GUIConfig:
             transition: all 0.2s ease !important;
         }
 
+        /* Universal selector for output textbox to prevent wrapping */
+        .output-textbox * {
+            white-space: nowrap !important;
+            overflow-x: scroll !important;
+            overflow-y: hidden !important;
+            word-wrap: normal !important;
+            word-break: normal !important;
+            scrollbar-width: thin !important;
+        }
+
+        /* Custom scrollbar styling for webkit browsers */
+        .output-textbox input::-webkit-scrollbar,
+        .output-textbox textarea::-webkit-scrollbar,
+        .output-textbox *::-webkit-scrollbar {
+            height: 6px !important;
+        }
+
+        .output-textbox input::-webkit-scrollbar-track,
+        .output-textbox textarea::-webkit-scrollbar-track,
+        .output-textbox *::-webkit-scrollbar-track {
+            background: #f1f1f1 !important;
+            border-radius: 3px !important;
+        }
+
+        .output-textbox input::-webkit-scrollbar-thumb,
+        .output-textbox textarea::-webkit-scrollbar-thumb,
+        .output-textbox *::-webkit-scrollbar-thumb {
+            background: #c1c1c1 !important;
+            border-radius: 3px !important;
+        }
+
+        .output-textbox input::-webkit-scrollbar-thumb:hover,
+        .output-textbox textarea::-webkit-scrollbar-thumb:hover,
+        .output-textbox *::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8 !important;
+        }
+
         .output-textbox:focus-within {
             border-color: #165DFF !important;
             box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1) !important;
