@@ -1,11 +1,14 @@
+import os
+import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import numpy as np
-from pdf2zh.doclayout import (
-    OnnxModel,
-    YoloResult,
-    YoloBox,
-)
+
+# Add src to Python path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
+
+from pdf2zh.core.doclayout import OnnxModel, YoloBox, YoloResult
 
 
 class TestOnnxModel(unittest.TestCase):

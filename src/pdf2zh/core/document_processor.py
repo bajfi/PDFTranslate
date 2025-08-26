@@ -69,7 +69,7 @@ class FontManager:
 
     def _setup_fonts(self):
         """Setup fonts for the target language."""
-        from pdf2zh.font_utils import NOTO_NAME, download_remote_fonts
+        from pdf2zh.utils.font_utils import NOTO_NAME, download_remote_fonts
 
         font_path = download_remote_fonts(self.lang_out)
         noto = Font(NOTO_NAME, font_path)
@@ -215,7 +215,7 @@ class PDFDocumentProcessor:
             Dictionary mapping page_idx to translated Document (single page).
         """
         # Import translate_patch from the translation_utils module
-        from pdf2zh.translation_utils import translate_patch
+        from pdf2zh.translation.translation_utils import translate_patch
 
         translated_pages = {}
 

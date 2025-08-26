@@ -16,9 +16,9 @@ from babeldoc.docvision.doclayout import OnnxModel
 from gradio_pdf import PDF
 
 from pdf2zh.config import ConfigManager
-from pdf2zh.doclayout import ModelInstance
+from pdf2zh.core.doclayout import ModelInstance
 from pdf2zh.high_level import translate
-from pdf2zh.translator import (
+from pdf2zh.translation.translator import (
     AnythingLLMTranslator,
     ArgosTranslator,
     AzureOpenAITranslator,

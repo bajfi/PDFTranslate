@@ -1,12 +1,21 @@
+import os
+import sys
 import unittest
 from textwrap import dedent
 from unittest import mock
 
+# Add src to Python path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
+
 from ollama import ResponseError as OllamaResponseError
 
-from pdf2zh import cache
 from pdf2zh.config import ConfigManager
-from pdf2zh.translator import BaseTranslator, OllamaTranslator, OpenAIlikedTranslator
+from pdf2zh.translation.translator import (
+    BaseTranslator,
+    OllamaTranslator,
+    OpenAIlikedTranslator,
+)
+from pdf2zh.utils import cache
 
 # Since it is necessary to test whether the functionality meets the expected requirements,
 # private functions and private methods are allowed to be called.
@@ -162,7 +171,7 @@ class TestOllamaTranslator(unittest.TestCase):
                 <think>
                 Thinking...
                 </think>
-                    
+
                 天空呈现蓝色是因为...
                 """
             )

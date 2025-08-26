@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 import requests
 from pdfminer.pdfexceptions import PDFValueError
 
-from pdf2zh.doclayout import OnnxModel
+from pdf2zh.core.doclayout import OnnxModel
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ def translate(
             logger.warning(f"Failed to clean temp file {file_path}", exc_info=True)
 
         # Import translate_stream locally to avoid circular import
-        from pdf2zh.document_processor import translate_stream
+        from pdf2zh.core.document_processor import translate_stream
 
         s_mono, s_dual = translate_stream(
             s_raw,

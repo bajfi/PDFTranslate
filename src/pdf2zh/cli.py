@@ -19,9 +19,9 @@ from babeldoc.translation_config import TranslationConfig as YadtConfig
 
 from pdf2zh import __version__, log
 from pdf2zh.config import ConfigManager
-from pdf2zh.doclayout import ModelInstance, OnnxModel
-from pdf2zh.font_utils import download_remote_fonts
+from pdf2zh.core.doclayout import ModelInstance, OnnxModel
 from pdf2zh.high_level import translate
+from pdf2zh.utils.font_utils import download_remote_fonts
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +273,7 @@ def main(args: Optional[List[str]] = None) -> int:
         ModelInstance.value = OnnxModel.load_available()
 
     if parsed_args.interactive:
-        from pdf2zh.gui import setup_gui
+        from pdf2zh.gui.gui import setup_gui
 
         if parsed_args.serverport:
             setup_gui(
@@ -361,7 +361,7 @@ def yadt_main(parsed_args) -> int:
         except Exception:
             raise ValueError("prompt error.")
 
-    from pdf2zh.translator import (
+    from pdf2zh.translation.translator import (
         AnythingLLMTranslator,
         ArgosTranslator,
         AzureOpenAITranslator,

@@ -1,9 +1,11 @@
+import os
+import sys
 import unittest
-from pdf2zh import cache
-import threading
-import multiprocessing
-import random
-import string
+
+# Add src to Python path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
+
+from pdf2zh.utils import cache
 
 
 class TestCache(unittest.TestCase):

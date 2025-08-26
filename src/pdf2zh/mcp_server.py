@@ -11,7 +11,7 @@ from starlette.requests import Request
 from starlette.routing import Mount, Route
 
 from pdf2zh import translate_stream
-from pdf2zh.doclayout import ModelInstance
+from pdf2zh.core.doclayout import ModelInstance
 
 
 def create_mcp_app() -> FastMCP:

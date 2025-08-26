@@ -19,9 +19,8 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
-from pdf2zh.converter import TranslateConverter
-from pdf2zh.doclayout import OnnxModel
-from pdf2zh.pdfinterp import PDFPageInterpreterEx
+from pdf2zh.core.doclayout import OnnxModel
+from pdf2zh.core.pdfinterp import PDFPageInterpreterEx
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +73,9 @@ def translate_patch(
     Returns:
         Dictionary of object patches
     """
+    # Lazy import to avoid circular import
+    from pdf2zh.core.converter import TranslateConverter
+
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(

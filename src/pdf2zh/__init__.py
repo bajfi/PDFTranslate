@@ -1,6 +1,6 @@
 import logging
 
-from pdf2zh.document_processor import (
+from pdf2zh.core.document_processor import (
     FontManager,
     PageSelector,
     PDFDocumentProcessor,
@@ -11,7 +11,7 @@ from pdf2zh.high_level import translate
 log = logging.getLogger(__name__)
 
 __version__ = "1.9.11"
-__author__ = "Byaidu"
+__author__ = "Lee"
 __all__ = [
     "translate",
     "translate_stream",

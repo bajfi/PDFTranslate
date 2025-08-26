@@ -8,7 +8,7 @@ from flask import Flask, request, send_file
 
 from pdf2zh import translate_stream
 from pdf2zh.config import ConfigManager
-from pdf2zh.doclayout import ModelInstance
+from pdf2zh.core.doclayout import ModelInstance
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(

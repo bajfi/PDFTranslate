@@ -1,8 +1,15 @@
+import os
+import sys
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-from pdfminer.layout import LTPage, LTChar, LTLine
+from unittest.mock import MagicMock, Mock, patch
+
+from pdfminer.layout import LTChar, LTLine, LTPage
 from pdfminer.pdfinterp import PDFResourceManager
-from pdf2zh.converter import PDFConverterEx, TranslateConverter
+
+# Add src to Python path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
+
+from pdf2zh.core.converter import PDFConverterEx, TranslateConverter
 
 
 class TestPDFConverterEx(unittest.TestCase):
@@ -58,7 +65,7 @@ class TestTranslateConverter(unittest.TestCase):
         self.assertEqual(self.converter.translator.lang_in, "en")
         self.assertEqual(self.converter.translator.lang_out, "zh-CN")
 
-    @patch("pdf2zh.converter.TranslateConverter.receive_layout")
+    @patch("pdf2zh.core.converter.TranslateConverter.receive_layout")
     def test_receive_layout(self, mock_receive_layout):
         mock_page = LTPage(1, (0, 0, 100, 200))
         mock_font = Mock()
