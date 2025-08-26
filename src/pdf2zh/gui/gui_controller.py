@@ -151,7 +151,7 @@ class PDFTranslatorGUI:
                 components["output_file_dual"],
                 components["output_title"],
             ],
-        ).then(lambda: None, js=event_handlers.get_reset_recaptcha_js())
+        )
 
         # Cancellation button handler
         components["cancellation_btn"].click(
@@ -243,10 +243,13 @@ class PDFTranslatorGUI:
 
             progress(1.0, desc="Translation complete!")
 
+            # Clean up session
+            session.cleanup()
+
             return (
-                file_mono,
-                file_mono,
-                file_dual,
+                str(file_mono),
+                str(file_mono),
+                str(file_dual),
                 gr.update(visible=True),
                 gr.update(visible=True),
                 gr.update(visible=True),

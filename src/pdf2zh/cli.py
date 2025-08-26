@@ -16,7 +16,6 @@ from babeldoc.high_level import async_translate as yadt_translate
 from babeldoc.high_level import init as yadt_init
 from babeldoc.main import create_progress_handler
 from babeldoc.translation_config import TranslationConfig as YadtConfig
-
 from pdf2zh import __version__, log
 from pdf2zh.config import ConfigManager
 from pdf2zh.core.doclayout import ModelInstance, OnnxModel
@@ -320,6 +319,7 @@ def main(args: Optional[List[str]] = None) -> int:
     print(parsed_args)
     if parsed_args.babeldoc:
         return yadt_main(parsed_args)
+
     if parsed_args.dir:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
         parsed_args.files = untranlate_file

@@ -10,9 +10,8 @@ from string import Template
 from typing import Any, Dict, List, Optional
 
 import requests
-from pdfminer.pdfexceptions import PDFValueError
-
 from pdf2zh.core.doclayout import OnnxModel
+from pdfminer.pdfexceptions import PDFValueError
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +74,13 @@ def convert_to_pdfa(input_path, output_path):
     # Save as PDF/A
     pdf.save(output_path, linearize=True)
     pdf.close()
+
+
+def byte2pdf(filename: str | Path, s_mono: bytes):
+    file_mono = Path(filename).with_suffix(".pdf")
+    with open(file_mono, "wb") as doc_mono:
+        doc_mono.write(s_mono)
+    logger.info(f"Saved PDF: {file_mono}")
 
 
 def translate(
@@ -165,14 +171,16 @@ def translate(
             s_raw,
             **locals(),
         )
-        file_mono = Path(output) / f"{filename}-mono.pdf"
-        file_dual = Path(output) / f"{filename}-dual.pdf"
-        doc_mono = open(file_mono, "wb")
-        doc_dual = open(file_dual, "wb")
-        doc_mono.write(s_mono)
-        doc_dual.write(s_dual)
-        doc_mono.close()
-        doc_dual.close()
+        byte2pdf(
+            file_mono := Path(output) / f"{filename}-mono.pdf",
+            s_mono,
+        )
+
+        byte2pdf(
+            file_dual := Path(output) / f"{filename}-dual.pdf",
+            s_dual,
+        )
+
         result_files.append((str(file_mono), str(file_dual)))
 
     return result_files

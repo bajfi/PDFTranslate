@@ -195,6 +195,8 @@ class PDFDocumentProcessor:
         doc_mono_final.close()
         doc_dual_final.close()
 
+        logger.info("Document processing complete")
+
         return mono_bytes, dual_bytes
 
     def _translate_pages(
