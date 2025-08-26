@@ -71,6 +71,26 @@ class InputComponents:
             interactive=True,
         )
 
+        # Output directory section - cleaner layout
+        with gr.Group():
+            gr.Markdown("### Output Settings", elem_classes=["section-header"])
+            with gr.Row(elem_classes=["output-row"]):
+                components["output_dir"] = gr.Textbox(
+                    label="📁 Output Directory",
+                    value="pdf2zh_files",
+                    placeholder="Choose where to save your translated files...",
+                    interactive=True,
+                    scale=4,
+                    elem_classes=["output-textbox"],
+                )
+                components["browse_output_btn"] = gr.Button(
+                    "Browse",
+                    size="md",
+                    scale=1,
+                    variant="secondary",
+                    elem_classes=["browse-btn"],
+                )
+
         return components
 
     def create_translation_options(self):
@@ -268,6 +288,53 @@ class EventHandlers:
 
         ConfigManager.set("PDF2ZH_VFONT", value)
         return value
+
+    def on_output_dir_change(self, output_dir):
+        """Handle output directory change."""
+        from .file_manager import file_manager
+
+        # Update the file manager's output directory
+        file_manager.set_output_directory(output_dir)
+        # Don't return anything since outputs=None in the handler
+
+    def on_browse_output_click(self):
+        """Handle browse button click for output directory."""
+        import gradio as gr
+
+        try:
+            import os
+            import tkinter as tk
+            from tkinter import filedialog
+
+            # Create a root window but don't show it
+            root = tk.Tk()
+            root.withdraw()
+
+            # Make sure it appears on top
+            root.attributes("-topmost", True)
+            root.focus_force()
+
+            # Open directory selection dialog
+            directory = filedialog.askdirectory(
+                title="Select Output Directory for Translated Files",
+                initialdir=os.path.expanduser("~"),
+            )
+
+            # Destroy the root window
+            root.destroy()
+
+            if directory:
+                # Provide user feedback
+                return gr.update(value=directory)
+            # User cancelled - no change
+            return gr.update()
+
+        except Exception as e:
+            # If tkinter fails for other reasons
+            gr.Warning(
+                f"❌ Directory selection failed: {str(e)}. Please type the path manually."
+            )
+            return gr.update()
 
     def get_recaptcha_js(self):
         """Get reCAPTCHA JavaScript for demo mode."""

@@ -9,7 +9,6 @@ from pathlib import Path
 from string import Template
 
 from babeldoc.docvision.doclayout import OnnxModel
-
 from pdf2zh.core.doclayout import ModelInstance
 from pdf2zh.high_level import translate
 from pdf2zh.translation.translator import OpenAITranslator
@@ -81,12 +80,16 @@ class TranslationService:
         vfont: str,
         env_values: list,
         session: TranslationSession,
+        output_dir: str = None,
         callback_fn=None,
     ) -> dict:
         """Prepare parameters for translation."""
 
-        # Setup output directory
-        output = Path("pdf2zh_files")
+        # Setup output directory with custom path if provided
+        if output_dir and output_dir.strip():
+            output = Path(output_dir)
+        else:
+            output = Path("pdf2zh_files")
         output.mkdir(parents=True, exist_ok=True)
 
         # Get translator and prepare environment

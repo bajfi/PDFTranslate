@@ -16,8 +16,31 @@ class FileManager:
 
     def __init__(self):
         self.config = GUIConfig()
-        self.output_dir = Path("pdf2zh_files")
+        self.default_output_dir = Path("pdf2zh_files")
+        self.output_dir = self.default_output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def set_output_directory(self, output_path: str = None) -> None:
+        """Set the output directory for file operations.
+
+        Args:
+            output_path: Path to the output directory. If None, uses default.
+        """
+        if output_path and output_path.strip():
+            self.output_dir = Path(output_path)
+        else:
+            self.output_dir = self.default_output_dir
+
+        # Create directory if it doesn't exist
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def get_output_directory(self) -> str:
+        """Get the current output directory path.
+
+        Returns:
+            String path to the current output directory.
+        """
+        return str(self.output_dir)
 
     def download_from_url(self, url: str, size_limit: int = None) -> str:
         """Download a file from URL with optional size limit."""
@@ -54,9 +77,19 @@ class FileManager:
         return shutil.copy(file_input, self.output_dir)
 
     def prepare_input_file(
-        self, file_type: str, file_input: str, link_input: str
+        self, file_type: str, file_input: str, link_input: str, output_dir: str = None
     ) -> str:
-        """Prepare input file based on type (File or Link)."""
+        """Prepare input file based on type (File or Link).
+
+        Args:
+            file_type: Type of input ("File" or "Link")
+            file_input: Path to uploaded file
+            link_input: URL for download
+            output_dir: Custom output directory path
+        """
+        # Set output directory before processing
+        self.set_output_directory(output_dir)
+
         if file_type == "File":
             return self.copy_uploaded_file(file_input)
         elif file_type == "Link":

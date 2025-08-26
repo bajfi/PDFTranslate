@@ -113,6 +113,21 @@ class PDFTranslatorGUI:
             event_handlers.on_vfont_change, inputs=components["vfont"], outputs=None
         )
 
+        # Output directory change handler
+        components["output_dir"].change(
+            event_handlers.on_output_dir_change,
+            inputs=components["output_dir"],
+            outputs=None,
+        )
+
+        # Browse output directory handler (no progress needed for file dialog)
+        components["browse_output_btn"].click(
+            event_handlers.on_browse_output_click,
+            inputs=[],
+            outputs=components["output_dir"],
+            show_progress="hidden",  # Hide progress for folder selection
+        )
+
         # File upload handler
         components["file_input"].upload(
             lambda x: x,
@@ -128,6 +143,7 @@ class PDFTranslatorGUI:
                 components["file_type"],
                 components["file_input"],
                 components["link_input"],
+                components["output_dir"],
                 components["service"],
                 components["lang_from"],
                 components["lang_to"],
@@ -164,6 +180,7 @@ class PDFTranslatorGUI:
         file_type,
         file_input,
         link_input,
+        output_dir,
         service,
         lang_from,
         lang_to,
@@ -197,7 +214,7 @@ class PDFTranslatorGUI:
 
             # Prepare input file
             file_path = file_manager.prepare_input_file(
-                file_type, file_input, link_input
+                file_type, file_input, link_input, output_dir
             )
 
             # Parse page range
@@ -229,6 +246,7 @@ class PDFTranslatorGUI:
                 vfont=vfont,
                 env_values=list(envs),
                 session=session,
+                output_dir=output_dir,
                 callback_fn=progress_callback,
             )
 

@@ -117,6 +117,52 @@ class GUIConfig:
         .pdf-canvas canvas {
             width: 100%;
         }
+
+        /* Elegant Output Settings Styling */
+        .section-header {
+            margin-bottom: 8px !important;
+            color: #2c3e50 !important;
+            font-weight: 600 !important;
+        }
+
+        .output-row {
+            gap: 12px !important;
+            align-items: end !important;
+            margin: 0 !important;
+        }
+
+        .output-textbox {
+            border-radius: 8px !important;
+            border: 1.5px solid #e1e5e9 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .output-textbox:focus-within {
+            border-color: #165DFF !important;
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1) !important;
+        }
+
+        .browse-btn {
+            align-self: center !important;
+            min-height: 48px !important;
+            border-radius: 8px !important;
+            border: none !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            margin-right: 12px !important;
+            font-size: 14px !important;
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+        }
+
+        /* Hide processing indicators during folder browse */
+        .browse-btn:active + .progress-container {
+            display: none !important;
+        }
     """
 
     # reCAPTCHA script for demo
