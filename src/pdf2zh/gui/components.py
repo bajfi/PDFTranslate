@@ -43,18 +43,27 @@ class InputComponents:
 
     def __init__(self):
         self.config = GUIConfig()
+        # Migrate old settings when initializing
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.migrate_old_settings()
 
     def create_file_input_section(self):
         """Create file input section."""
+        from .settings_manager import GUISettingsManager
+
         components = {}
 
         demo_label = "## File | < 5 MB" if self.config.is_demo_mode() else "## File"
         gr.Markdown(demo_label)
 
+        # Load saved file type
+        saved_file_type = GUISettingsManager.load_setting("file_type", "File")
+
         components["file_type"] = gr.Radio(
             choices=["File", "Link"],
             label="Type",
-            value="File",
+            value=saved_file_type,
         )
 
         components["file_input"] = gr.File(
@@ -63,13 +72,17 @@ class InputComponents:
             file_types=[".pdf"],
             type="filepath",
             elem_classes=["input-file"],
+            visible=saved_file_type == "File",
         )
 
         components["link_input"] = gr.Textbox(
             label="Link",
-            visible=False,
+            visible=saved_file_type == "Link",
             interactive=True,
         )
+
+        # Load saved output directory
+        saved_output_dir = GUISettingsManager.load_setting("output_dir", "pdf2zh_files")
 
         # Output directory section - cleaner layout
         with gr.Group():
@@ -77,7 +90,7 @@ class InputComponents:
             with gr.Row(elem_classes=["output-row"]):
                 components["output_dir"] = gr.Textbox(
                     label="📁 Output Directory",
-                    value="pdf2zh_files",
+                    value=saved_output_dir,
                     placeholder="Choose where to save your translated files...",
                     interactive=True,
                     scale=4,
@@ -95,15 +108,19 @@ class InputComponents:
 
     def create_translation_options(self):
         """Create translation options section."""
+        from .settings_manager import GUISettingsManager
+
         components = {}
 
         gr.Markdown("## Option")
 
         enabled_services = self.config.get_enabled_services()
+        saved_service = GUISettingsManager.get_service_setting(enabled_services)
+
         components["service"] = gr.Dropdown(
             label="Service",
             choices=enabled_services,
-            value=enabled_services[0],
+            value=saved_service,
         )
 
         # Environment variable inputs (initially hidden)
@@ -116,30 +133,40 @@ class InputComponents:
                 )
             )
 
+        # Load saved languages
+        saved_lang_from = GUISettingsManager.load_setting(
+            "lang_from", self.config.get_default_lang_from()
+        )
+        saved_lang_to = GUISettingsManager.load_setting(
+            "lang_to", self.config.get_default_lang_to()
+        )
+
         # Language selection
         with gr.Row():
             components["lang_from"] = gr.Dropdown(
                 label="Translate from",
                 choices=list(self.config.LANGUAGE_MAP.keys()),
-                value=self.config.get_default_lang_from(),
+                value=saved_lang_from,
             )
             components["lang_to"] = gr.Dropdown(
                 label="Translate to",
                 choices=list(self.config.LANGUAGE_MAP.keys()),
-                value=self.config.get_default_lang_to(),
+                value=saved_lang_to,
             )
 
         # Page range selection
         page_choices = list(self.config.get_page_map().keys())
+        saved_page_range = GUISettingsManager.get_page_range_setting(page_choices)
+
         components["page_range"] = gr.Radio(
             choices=page_choices,
             label="Pages",
-            value=page_choices[0],
+            value=saved_page_range,
         )
 
         components["page_input"] = gr.Textbox(
             label="Page range",
-            visible=False,
+            visible=saved_page_range == "Others",
             interactive=True,
         )
 
@@ -147,35 +174,62 @@ class InputComponents:
 
     def create_advanced_options(self):
         """Create advanced options accordion."""
+        from .settings_manager import GUISettingsManager
+
         components = {}
+
+        # Load saved advanced settings
+        saved_threads = GUISettingsManager.load_setting("threads", "4")
+        saved_skip_subset_fonts = GUISettingsManager.load_setting(
+            "skip_subset_fonts", False
+        )
+        saved_ignore_cache = GUISettingsManager.load_setting("ignore_cache", True)
+        saved_vfont = GUISettingsManager.load_setting(
+            "vfont", self.config.get_default_vfont()
+        )
+        saved_use_babeldoc = GUISettingsManager.load_setting("use_babeldoc", False)
+        saved_prompt = GUISettingsManager.load_setting("prompt", "")
 
         with gr.Accordion("Open for More Experimental Options!", open=False):
             gr.Markdown("#### Experimental")
 
             components["threads"] = gr.Textbox(
-                label="number of threads", interactive=True, value="4"
+                label="number of threads", interactive=True, value=saved_threads
             )
 
             components["skip_subset_fonts"] = gr.Checkbox(
-                label="Skip font subsetting", interactive=True, value=False
+                label="Skip font subsetting",
+                interactive=True,
+                value=saved_skip_subset_fonts,
             )
 
             components["ignore_cache"] = gr.Checkbox(
-                label="Ignore cache", interactive=True, value=True
+                label="Ignore cache", interactive=True, value=saved_ignore_cache
             )
 
             components["vfont"] = gr.Textbox(
                 label="Custom formula font regex (vfont)",
                 interactive=True,
-                value=self.config.get_default_vfont(),
+                value=saved_vfont,
             )
 
             components["prompt"] = gr.Textbox(
-                label="Custom Prompt for llm", interactive=True, visible=False
+                label="Custom Prompt for llm",
+                interactive=True,
+                visible=False,
+                value=saved_prompt,
             )
 
             components["use_babeldoc"] = gr.Checkbox(
-                label="Use BabelDOC", interactive=True, value=False
+                label="Use BabelDOC", interactive=True, value=saved_use_babeldoc
+            )
+
+            # Settings management section
+            gr.Markdown("#### Settings Management")
+            components["reset_settings_btn"] = gr.Button(
+                "Reset All Settings to Defaults",
+                variant="secondary",
+                size="sm",
             )
 
         return components
@@ -252,6 +306,11 @@ class EventHandlers:
 
     def on_select_service(self, service, evt: gr.EventData):
         """Handle service selection change."""
+        # Save the selected service
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("service", service)
+
         hidden_details = self.config.should_hide_gradio_details()
         env_updates = service_manager.get_service_config_for_gradio(
             service, hidden_details
@@ -270,6 +329,11 @@ class EventHandlers:
 
     def on_select_filetype(self, file_type):
         """Handle file type selection change."""
+        # Save the selected file type
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("file_type", file_type)
+
         return (
             gr.update(visible=file_type == "File"),
             gr.update(visible=file_type == "Link"),
@@ -277,6 +341,11 @@ class EventHandlers:
 
     def on_select_page(self, choice):
         """Handle page range selection change."""
+        # Save the selected page range
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("page_range", choice)
+
         if choice == "Others":
             return gr.update(visible=True)
         else:
@@ -284,17 +353,87 @@ class EventHandlers:
 
     def on_vfont_change(self, value):
         """Handle vfont configuration change."""
+        # Save vfont to both old and new locations for compatibility
         from pdf2zh.config import ConfigManager
 
+        from .settings_manager import GUISettingsManager
+
         ConfigManager.set("PDF2ZH_VFONT", value)
-        return value
+        GUISettingsManager.save_setting("vfont", value)
+        # Don't return anything since outputs=None in the handler
 
     def on_output_dir_change(self, output_dir):
         """Handle output directory change."""
         from .file_manager import file_manager
+        from .settings_manager import GUISettingsManager
+
+        # Save the output directory
+        GUISettingsManager.save_setting("output_dir", output_dir)
 
         # Update the file manager's output directory
         file_manager.set_output_directory(output_dir)
+        # Don't return anything since outputs=None in the handler
+
+    def on_lang_from_change(self, lang_from):
+        """Handle source language change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("lang_from", lang_from)
+        # Don't return anything since outputs=None in the handler
+
+    def on_lang_to_change(self, lang_to):
+        """Handle target language change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("lang_to", lang_to)
+        # Don't return anything since outputs=None in the handler
+
+    def on_threads_change(self, threads):
+        """Handle threads setting change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("threads", threads)
+        # Don't return anything since outputs=None in the handler
+
+    def on_skip_subset_fonts_change(self, skip_subset_fonts):
+        """Handle skip subset fonts setting change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("skip_subset_fonts", skip_subset_fonts)
+        # Don't return anything since outputs=None in the handler
+
+    def on_ignore_cache_change(self, ignore_cache):
+        """Handle ignore cache setting change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("ignore_cache", ignore_cache)
+        # Don't return anything since outputs=None in the handler
+
+    def on_use_babeldoc_change(self, use_babeldoc):
+        """Handle use babeldoc setting change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("use_babeldoc", use_babeldoc)
+        # Don't return anything since outputs=None in the handler
+
+    def on_prompt_change(self, prompt):
+        """Handle custom prompt change."""
+        from .settings_manager import GUISettingsManager
+
+        GUISettingsManager.save_setting("prompt", prompt)
+        # Don't return anything since outputs=None in the handler
+
+    def on_reset_settings(self):
+        """Handle reset settings button click."""
+        from .settings_manager import GUISettingsManager
+
+        try:
+            GUISettingsManager.reset_settings()
+            gr.Info(
+                "✅ Settings have been reset to defaults. Please refresh the page to see the changes."
+            )
+        except Exception as e:
+            gr.Warning(f"❌ Failed to reset settings: {str(e)}")
         # Don't return anything since outputs=None in the handler
 
     def on_browse_output_click(self):
@@ -367,4 +506,5 @@ ui_theme = UITheme()
 input_components = InputComponents()
 output_components = OutputComponents()
 action_components = ActionComponents()
+event_handlers = EventHandlers()
 event_handlers = EventHandlers()

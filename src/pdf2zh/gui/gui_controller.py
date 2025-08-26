@@ -108,6 +108,50 @@ class PDFTranslatorGUI:
             components["page_input"],
         )
 
+        # Language change handlers
+        components["lang_from"].change(
+            event_handlers.on_lang_from_change,
+            inputs=components["lang_from"],
+            outputs=None,
+        )
+
+        components["lang_to"].change(
+            event_handlers.on_lang_to_change,
+            inputs=components["lang_to"],
+            outputs=None,
+        )
+
+        # Advanced options change handlers
+        components["threads"].change(
+            event_handlers.on_threads_change,
+            inputs=components["threads"],
+            outputs=None,
+        )
+
+        components["skip_subset_fonts"].change(
+            event_handlers.on_skip_subset_fonts_change,
+            inputs=components["skip_subset_fonts"],
+            outputs=None,
+        )
+
+        components["ignore_cache"].change(
+            event_handlers.on_ignore_cache_change,
+            inputs=components["ignore_cache"],
+            outputs=None,
+        )
+
+        components["use_babeldoc"].change(
+            event_handlers.on_use_babeldoc_change,
+            inputs=components["use_babeldoc"],
+            outputs=None,
+        )
+
+        components["prompt"].change(
+            event_handlers.on_prompt_change,
+            inputs=components["prompt"],
+            outputs=None,
+        )
+
         # VFont configuration handler
         components["vfont"].change(
             event_handlers.on_vfont_change, inputs=components["vfont"], outputs=None
@@ -127,6 +171,14 @@ class PDFTranslatorGUI:
             outputs=components["output_dir"],
             show_progress="hidden",  # Hide progress for folder selection
         )
+
+        # Reset settings handler
+        if "reset_settings_btn" in components:
+            components["reset_settings_btn"].click(
+                event_handlers.on_reset_settings,
+                inputs=[],
+                outputs=None,
+            )
 
         # File upload handler
         components["file_input"].upload(
