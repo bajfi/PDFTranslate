@@ -8,8 +8,6 @@ across different modules, helping to avoid circular imports.
 import logging
 from pathlib import Path
 
-from babeldoc.assets.assets import get_font_and_metadata
-
 from pdf2zh.config import ConfigManager
 
 logger = logging.getLogger(__name__)
@@ -70,6 +68,8 @@ def download_remote_fonts(lang: str) -> str:
     # docker
     font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
     if not Path(font_path).exists():
+        from babeldoc.assets.assets import get_font_and_metadata
+
         font_path, _ = get_font_and_metadata(font_name)
         font_path = font_path.as_posix()
 

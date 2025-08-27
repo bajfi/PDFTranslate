@@ -367,6 +367,9 @@ class PDFTranslatorGUI:
         """Launch the GUI with the given parameters."""
 
         user_list, html = auth_manager.parse_user_passwd(auth_file)
+        from .settings_manager import GUISettingsManager
+
+        output_folder = GUISettingsManager.load_setting("output_dir", "pdf2zh_files")
 
         # Common launch parameters
         launch_params = {
@@ -374,11 +377,17 @@ class PDFTranslatorGUI:
             "inbrowser": True,
             "share": share,
             "server_port": server_port,
+            "allowed_paths": [output_folder],
         }
 
         # Demo mode has special handling
         if self.config.is_demo_mode():
-            self.demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
+            self.demo.launch(
+                server_name="0.0.0.0",
+                max_file_size="10mb",
+                inbrowser=True,
+                allowed_paths=[output_folder],
+            )
             return
 
         # Add authentication if provided

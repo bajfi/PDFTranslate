@@ -3,7 +3,6 @@ import ast
 
 import cv2
 import numpy as np
-from babeldoc.assets.assets import get_doclayout_onnx_model_path
 
 try:
     import onnx
@@ -77,6 +76,8 @@ class OnnxModel(DocLayoutModel):
 
     @staticmethod
     def from_pretrained():
+        from babeldoc.assets.assets import get_doclayout_onnx_model_path
+
         pth = get_doclayout_onnx_model_path()
         return OnnxModel(pth)
 

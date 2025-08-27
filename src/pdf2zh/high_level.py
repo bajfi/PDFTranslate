@@ -10,8 +10,9 @@ from string import Template
 from typing import Any, Dict, List, Optional
 
 import requests
-from pdf2zh.core.doclayout import OnnxModel
 from pdfminer.pdfexceptions import PDFValueError
+
+from pdf2zh.core.doclayout import OnnxModel
 
 logger = logging.getLogger(__name__)
 

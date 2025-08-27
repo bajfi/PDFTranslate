@@ -13,11 +13,11 @@ class GUISettingsManager:
 
     # Default settings for the GUI
     DEFAULT_SETTINGS = {
-        "service": None,  # Will be set to first available service
+        "service": "Google",  # Will be set to first available service
         "lang_from": "English",
         "lang_to": "Simplified Chinese",
         "page_range": None,  # Will be set to first available option
-        "output_dir": "pdf2zh_files",
+        "output_dir": "",
         "threads": "4",
         "skip_subset_fonts": False,
         "ignore_cache": True,
@@ -36,19 +36,25 @@ class GUISettingsManager:
     def save_setting(cls, key: str, value: Any) -> None:
         """Save a single GUI setting.
 
+        This method saves a single setting by loading the current config
+        (not merged with defaults), updating the specific setting, and then
+        saving back using save_all_settings which applies proper filtering
+        to prevent None values from being saved.
+
         Args:
             key: The setting key
             value: The setting value
         """
         try:
-            # Get current settings
-            current_settings = cls.load_all_settings()
+            # Get current settings from config (not merged with defaults)
+            # This avoids saving defaults that shouldn't be saved
+            current_settings = ConfigManager.get(cls.get_settings_key(), {})
 
             # Update the specific setting
             current_settings[key] = value
 
-            # Save back to config
-            ConfigManager.set(cls.get_settings_key(), current_settings)
+            # Save back to config using save_all_settings to apply filtering
+            cls.save_all_settings(current_settings)
 
             logger.debug(f"Saved GUI setting: {key} = {value}")
 
@@ -77,8 +83,13 @@ class GUISettingsManager:
     def load_all_settings(cls) -> Dict[str, Any]:
         """Load all GUI settings.
 
+        This method loads settings from config and merges them with defaults.
+        Importantly, it filters out None values from the config to prevent
+        them from overriding the default values. This ensures that boolean
+        settings like ignore_cache use their default values when not explicitly set.
+
         Returns:
-            Dictionary of all GUI settings
+            Dictionary of all GUI settings with proper defaults
         """
         try:
             settings = ConfigManager.get(cls.get_settings_key(), {})
@@ -91,8 +102,12 @@ class GUISettingsManager:
                 settings = {}
 
             # Merge with defaults to ensure all keys exist
+            # Only merge non-None values to preserve defaults for None values
+            # This is crucial for boolean settings that might be saved as null/None
             merged_settings = cls.DEFAULT_SETTINGS.copy()
-            merged_settings.update(settings)
+            for key, value in settings.items():
+                if value is not None:
+                    merged_settings[key] = value
 
             return merged_settings
 
@@ -109,6 +124,7 @@ class GUISettingsManager:
         """
         try:
             # Filter out None values and ensure we only save known settings
+            # This prevents None values from being saved to config file
             filtered_settings = {}
             for key, value in settings.items():
                 if key in cls.DEFAULT_SETTINGS and value is not None:

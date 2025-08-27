@@ -242,4 +242,3 @@ class ConfigManager:
         with instance._lock:
             if instance._config_path.exists():
                 os.remove(instance._config_path)
-                os.remove(instance._config_path)

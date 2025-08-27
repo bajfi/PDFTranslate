@@ -174,12 +174,20 @@ class InputComponents:
 
     def create_advanced_options(self):
         """Create advanced options accordion."""
+        import multiprocessing
+
         from .settings_manager import GUISettingsManager
 
         components = {}
 
         # Load saved advanced settings
         saved_threads = GUISettingsManager.load_setting("threads", "4")
+        # Convert saved threads to integer, with fallback to 4
+        try:
+            saved_threads_int = int(saved_threads)
+        except (ValueError, TypeError):
+            saved_threads_int = 4
+
         saved_skip_subset_fonts = GUISettingsManager.load_setting(
             "skip_subset_fonts", False
         )
@@ -190,11 +198,22 @@ class InputComponents:
         saved_use_babeldoc = GUISettingsManager.load_setting("use_babeldoc", False)
         saved_prompt = GUISettingsManager.load_setting("prompt", "")
 
+        # Calculate reasonable max threads (2x CPU cores,)
+        cpu_cores = multiprocessing.cpu_count()
+        max_threads = cpu_cores * 2
+
         with gr.Accordion("Open for More Experimental Options!", open=False):
             gr.Markdown("#### Experimental")
 
-            components["threads"] = gr.Textbox(
-                label="number of threads", interactive=True, value=saved_threads
+            components["threads"] = gr.Slider(
+                minimum=1,
+                maximum=max_threads,
+                step=1,
+                label=f"Number of threads (1-{max_threads}, detected {cpu_cores} CPU cores)",
+                value=min(
+                    saved_threads_int, max_threads
+                ),  # Ensure value is within range
+                interactive=True,
             )
 
             components["skip_subset_fonts"] = gr.Checkbox(
@@ -392,7 +411,9 @@ class EventHandlers:
         """Handle threads setting change."""
         from .settings_manager import GUISettingsManager
 
-        GUISettingsManager.save_setting("threads", threads)
+        # Convert to string for consistent storage
+        threads_str = str(int(threads)) if threads is not None else "4"
+        GUISettingsManager.save_setting("threads", threads_str)
         # Don't return anything since outputs=None in the handler
 
     def on_skip_subset_fonts_change(self, skip_subset_fonts):
