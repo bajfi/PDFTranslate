@@ -8,7 +8,6 @@ from unittest import mock
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 from ollama import ResponseError as OllamaResponseError
-
 from pdf2zh.config import ConfigManager
 from pdf2zh.translation.translator import (
     BaseTranslator,

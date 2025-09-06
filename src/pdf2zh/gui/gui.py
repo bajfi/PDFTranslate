@@ -5,6 +5,8 @@ This module now serves as the main entry point that delegates to the
 refactored components for improved separation of concerns.
 """
 
+import warnings
+
 # Import the refactored GUI controller
 from .gui_controller import (
     babeldoc_translate_file,
@@ -12,6 +14,9 @@ from .gui_controller import (
     stop_translate_file,
     translate_file,
 )
+
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 # Re-export for backward compatibility
 __all__ = [

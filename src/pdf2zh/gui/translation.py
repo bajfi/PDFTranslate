@@ -9,6 +9,7 @@ from pathlib import Path
 from string import Template
 
 from babeldoc.docvision.doclayout import OnnxModel
+
 from pdf2zh.core.doclayout import ModelInstance
 from pdf2zh.high_level import translate
 from pdf2zh.translation.translator import OpenAITranslator

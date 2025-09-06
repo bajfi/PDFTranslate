@@ -26,7 +26,6 @@ You can try our application out using either of the following demos:
 - [Public free service](https://pdf2zh.com/) online without installation _(recommended)_.
 - [Immersive Translate - BabelDOC](https://app.immersivetranslate.com/babel-doc/) 1000 free pages per month. _(recommended)_
 - [Demo hosted on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
-- [Demo hosted on ModelScope](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) without installation.
 
 Note that the computing resources of the demo are limited, so please avoid abusing them.
 
@@ -95,45 +94,7 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 </details>
 
 <details>
-  <summary>4. Docker</summary>
-
-1. Pull and run:
-
-   ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
-   ```
-
-2. Open in browser:
-
-   ```
-   http://localhost:7860/
-   ```
-
-For docker deployment on cloud service:
-
-<div>
-<a href="https://www.heroku.com/deploy?template=https://github.com/bajfi/PDFTranslate.git">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
-<a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
-<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
-<a href="https://template.sealos.io/deploy?templateName=pdf2zh">
-  <img src="https://sealos.io/Deploy-on-Sealos.svg" alt="Deploy on Sealos" height="26"></a>
-</div>
-
-</details>
-
-<details>
-  <summary>5. Zotero Plugin</summary>
-
-See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
-
-</details>
-
-<details>
-  <summary>6. Commandline</summary>
+  <summary>4. Commandline</summary>
 
 1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
