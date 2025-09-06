@@ -214,6 +214,16 @@ class InputComponents:
         )
         saved_use_babeldoc = GUISettingsManager.load_setting("use_babeldoc", False)
         saved_prompt = GUISettingsManager.load_setting("prompt", "")
+        saved_chunk_size = GUISettingsManager.load_setting("chunk_size", 20)
+
+        # Convert saved chunk_size to integer, with fallback to 20
+        try:
+            saved_chunk_size_int = int(saved_chunk_size)
+            # Ensure it's within valid range
+            if not (1 <= saved_chunk_size_int <= 100):
+                saved_chunk_size_int = 20
+        except (ValueError, TypeError):
+            saved_chunk_size_int = 20
 
         # Get initial prompt visibility based on saved service
         enabled_services = self.config.get_enabled_services()
@@ -244,6 +254,15 @@ class InputComponents:
                 value=min(
                     saved_threads_int, max_threads
                 ),  # Ensure value is within range
+                interactive=True,
+            )
+
+            components["chunk_size"] = gr.Slider(
+                minimum=1,
+                maximum=100,
+                step=1,
+                label="Chunk size - Number of pages to process at once (1-100)",
+                value=saved_chunk_size_int,
                 interactive=True,
             )
 
@@ -445,6 +464,22 @@ class EventHandlers:
         # Convert to string for consistent storage
         threads_str = str(int(threads)) if threads is not None else "4"
         GUISettingsManager.save_setting("threads", threads_str)
+        # Don't return anything since outputs=None in the handler
+
+    def on_chunk_size_change(self, chunk_size):
+        """Handle chunk size setting change."""
+        from .settings_manager import GUISettingsManager
+
+        # Convert to int and validate, with fallback to 20
+        try:
+            chunk_size_int = int(chunk_size) if chunk_size is not None else 20
+            # Ensure it's within valid range
+            if chunk_size_int < 1 or chunk_size_int > 100:
+                chunk_size_int = 20
+        except (ValueError, TypeError):
+            chunk_size_int = 20
+
+        GUISettingsManager.save_setting("chunk_size", chunk_size_int)
         # Don't return anything since outputs=None in the handler
 
     def on_skip_subset_fonts_change(self, skip_subset_fonts):

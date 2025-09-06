@@ -200,6 +200,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--sse", action="store_true", help="Launch pdf2zh MCP server in SSE mode"
     )
 
+    parse_params.add_argument(
+        "--chunk-size",
+        type=int,
+        default=20,
+        help="Number of pages to process in each chunk (1-100, default: 20)",
+    )
+
     return parser
 
 
@@ -216,6 +223,17 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
                 pages.append(int(p) - 1)
         parsed_args.raw_pages = parsed_args.pages
         parsed_args.pages = pages
+
+    # Validate chunk size
+
+    try:
+        chunk_size_ = int(parsed_args.chunk_size)
+        if not (1 <= chunk_size_ <= 100):
+            raise ValueError("Chunk size must be between 1 and 100.")
+        parsed_args.chunk_size = chunk_size_
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
     return parsed_args
 

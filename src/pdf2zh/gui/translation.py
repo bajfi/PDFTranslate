@@ -83,6 +83,7 @@ class TranslationService:
         session: TranslationSession,
         output_dir: str = None,
         callback_fn=None,
+        chunk_size: int = 20,
     ) -> dict:
         """Prepare parameters for translation."""
 
@@ -117,6 +118,7 @@ class TranslationService:
             "ignore_cache": ignore_cache,
             "vfont": vfont,
             "model": ModelInstance.value,
+            "chunk_size": chunk_size,
         }
 
     def translate_pdf(

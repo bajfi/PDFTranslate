@@ -25,6 +25,7 @@ class GUISettingsManager:
         "use_babeldoc": False,
         "prompt": "",
         "file_type": "File",
+        "chunk_size": 20,
     }
 
     @classmethod

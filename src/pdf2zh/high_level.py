@@ -102,6 +102,7 @@ def translate(
     prompt: Template = None,
     skip_subset_fonts: bool = False,
     ignore_cache: bool = False,
+    chunk_size: int = 20,
     **kwarg: Any,
 ):
     if not files:

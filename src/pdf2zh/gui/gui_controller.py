@@ -128,6 +128,12 @@ class PDFTranslatorGUI:
             outputs=None,
         )
 
+        components["chunk_size"].change(
+            event_handlers.on_chunk_size_change,
+            inputs=components["chunk_size"],
+            outputs=None,
+        )
+
         components["skip_subset_fonts"].change(
             event_handlers.on_skip_subset_fonts_change,
             inputs=components["skip_subset_fonts"],
@@ -203,6 +209,7 @@ class PDFTranslatorGUI:
                 components["page_input"],
                 components["prompt"],
                 components["threads"],
+                components["chunk_size"],
                 components["skip_subset_fonts"],
                 components["ignore_cache"],
                 components["vfont"],
@@ -240,6 +247,7 @@ class PDFTranslatorGUI:
         page_input,
         prompt,
         threads,
+        chunk_size,
         skip_subset_fonts,
         ignore_cache,
         vfont,
@@ -300,6 +308,7 @@ class PDFTranslatorGUI:
                 session=session,
                 output_dir=output_dir,
                 callback_fn=progress_callback,
+                chunk_size=chunk_size,
             )
 
             # Execute translation
