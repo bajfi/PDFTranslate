@@ -123,15 +123,32 @@ class InputComponents:
             value=saved_service,
         )
 
-        # Environment variable inputs (initially hidden)
+        # Environment variable inputs - initialize with saved service configuration
+        hidden_details = self.config.should_hide_gradio_details()
+        initial_env_config = service_manager.get_service_config_for_gradio(
+            saved_service, hidden_details
+        )
+
         components["envs"] = []
         for i in range(3):
-            components["envs"].append(
-                gr.Textbox(
-                    visible=False,
-                    interactive=True,
+            # Get initial configuration for this env variable
+            if i < len(initial_env_config) - 1:  # Skip the last one (prompt)
+                env_config = initial_env_config[i]
+                components["envs"].append(
+                    gr.Textbox(
+                        label=env_config.get("label", ""),
+                        value=env_config.get("value", ""),
+                        visible=env_config.get("visible", False),
+                        interactive=True,
+                    )
                 )
-            )
+            else:
+                components["envs"].append(
+                    gr.Textbox(
+                        visible=False,
+                        interactive=True,
+                    )
+                )
 
         # Load saved languages
         saved_lang_from = GUISettingsManager.load_setting(
@@ -198,6 +215,20 @@ class InputComponents:
         saved_use_babeldoc = GUISettingsManager.load_setting("use_babeldoc", False)
         saved_prompt = GUISettingsManager.load_setting("prompt", "")
 
+        # Get initial prompt visibility based on saved service
+        enabled_services = self.config.get_enabled_services()
+        saved_service = GUISettingsManager.get_service_setting(enabled_services)
+        hidden_details = self.config.should_hide_gradio_details()
+        initial_env_config = service_manager.get_service_config_for_gradio(
+            saved_service, hidden_details
+        )
+        # The last item in env_config is the prompt visibility
+        initial_prompt_visible = (
+            initial_env_config[-1].get("visible", False)
+            if initial_env_config
+            else False
+        )
+
         # Calculate reasonable max threads (2x CPU cores,)
         cpu_cores = multiprocessing.cpu_count()
         max_threads = cpu_cores * 2
@@ -235,7 +266,7 @@ class InputComponents:
             components["prompt"] = gr.Textbox(
                 label="Custom Prompt for llm",
                 interactive=True,
-                visible=False,
+                visible=initial_prompt_visible,
                 value=saved_prompt,
             )
 
